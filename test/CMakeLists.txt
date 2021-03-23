@@ -3,5 +3,5 @@ project(RequestTest)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(RequestTest main.cpp)
+add_executable(RequestTest main.cpp ../include/Request.h ../src/Request.cpp)
 

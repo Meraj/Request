@@ -9,8 +9,11 @@ set(CURL_LIBRARY "-lcurl")
 find_package(CURL REQUIRED)
 
 
-add_library(Request include/Request.cpp include/Request.h)
+add_library(Request src/Request.cpp include/Request.h)
+
+add_executable(RequestTest test/main.cpp include/Request.h src/Request.cpp)
 
 ## CURL
 include_directories(${CURL_INCLUDE_DIR})
 target_link_libraries(${PROJECT_NAME} ${CURL_LIBRARIES})
+target_link_libraries(RequestTest ${CURL_LIBRARIES})

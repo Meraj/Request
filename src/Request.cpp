@@ -78,10 +78,17 @@ Response Request::execute() {
     if(!this->isSetMethod){
         this->setMethod(Request::GET);
     }
-
+    if(chunk != NULL){
+        curl_easy_setopt(this->curl, CURLOPT_HTTPHEADER, chunk);
+    }
     curl_easy_setopt(this->curl, CURLOPT_USERAGENT, this->userAgent.c_str()); // set user agent
     if(this->hasParameters){
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, this->generateParameterString().c_str());
+        if(this->methodType == 0){
+            this->url = this->url+"?"+this->generateParameterString();
+            this->setUrl(this->url);
+        }else{
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, this->generateParameterString().c_str());
+        }
     }
     curl_easy_setopt(this->curl, CURLOPT_WRITEDATA, &response.body);
     curl_easy_setopt(this->curl, CURLOPT_WRITEFUNCTION, WriteCallback);
@@ -119,6 +126,24 @@ Request Request::addParameter(std::string name, std::string value) {
     return *this;
 }
 
+Request Request::addHeader(std::string name, std::string value) {
+    if(value.empty()){
+        std::string h = std::move(name) + ":";
+        chunk = curl_slist_append(chunk, h.c_str());
+    }else{
+        std::string h = std::move(name) + ": " + std::move(value);
+        chunk = curl_slist_append(chunk, h.c_str());
+    }
+    return *this;
+}
+
+Request Request::addHeader(std::string name) {
+    std::string h = std::move(name) + ";";
+    chunk = curl_slist_append(chunk, h.c_str());
+    return *this;
+}
+
+
 std::string Request::generateParameterString() {
     std::string parameter;
     for(int i = 0; i < this->parameterNames.size(); i++){
@@ -128,3 +153,7 @@ std::string Request::generateParameterString() {
     return parameter;
 }
 
+Request Request::doDebug(bool shallWe) {
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, shallWe);
+return *this;
+}
